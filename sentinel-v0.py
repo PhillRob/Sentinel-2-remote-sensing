@@ -192,5 +192,4 @@ patches = [PolygonPatch(feature, edgecolor="red", facecolor="none", linewidth=1)
 
 ax.add_collection(mpl.collections.PatchCollection(patches, match_original=True))
 
-
 #todo change detection
