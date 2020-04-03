@@ -24,8 +24,8 @@ import geopandas as gpd
 api = SentinelAPI('phillr', 'testme2019', 'https://scihub.copernicus.eu/dhus')
 
 # search by polygon, time, and SciHub query keywords
-footprint = geojson_to_wkt(read_geojson('DQ.geojson'))
-products = api.query(footprint, date=('20190601', date(2019, 7, 30)), platformname='Sentinel-2',
+footprint = geojson_to_wkt(read_geojson('sample-polygone.geojson'))
+products = api.query(footprint, date=('20190101', date(2019, 2, 27)), platformname='Sentinel-2',
                      cloudcoverpercentage=(0, 10), processinglevel='Level-1C')
 
 # todo check for processed data
@@ -93,7 +93,7 @@ ndvi = (b8.astype(float) - b4.astype(float)) / (
 		b8.astype(float) + b4.astype(float))  # check if the second needs to be float!!!
 # ndvi = (b8.astype(float) - b4.astype(float)) / (b8 + b4)  # check if the second needs to be float!!!
 
-# set tjhreshold
+# set threshold
 ndvi_bi = ndvi
 ndvi_bi[np.where(ndvi_bi >= 0.2)] = 1
 ndvi_bi[np.where(ndvi_bi < 0.2)] = -999999999999
@@ -106,7 +106,7 @@ plt.imshow(ndvi)
 plt.show()
 
 # load shapefile
-shapefile = gpd.read_file("NDVI-project-v5.1.shp")
+shapefile = gpd.read_file("Addahnaa-Boundry.shp")
 
 shapefile.plot()
 plt.show()
@@ -123,9 +123,9 @@ df = pd.DataFrame({'area': [], 'vc': [], 'nd': []})
 
 # appending rows
 for data in result:
-	print(data['properties']['Descriptio'],
+	print(data['id'],
 	      ((data['properties']['count']) / (data['properties']['count'] + data['properties']['nodata']) * 100))
-	area.append((data['properties']['Descriptio']))
+	area.append((data['id']))
 
 	# centroid
 	# polystring = str(data['geometry']['coordinates'])
@@ -171,14 +171,18 @@ with rasterio.Env():
 		count=1,
 		driver='GTiff')
 
-	with rasterio.open(str(date.today()) + '_NDVI_' + str(test.title[0]) + '.tif', 'w', **profile) as dst:
-		dst.write(ndvi_bi.astype(rasterio.int8), 1)
+	with rasterio.open(str(date.today()) + '_NDVI1_' + str(test.title[0]) + '.tif', 'w', **profile) as dst:
+		dst.write(ndvi.astype(rasterio.int8), 1)
 
 # At the end of the ``with rasterio.Env()`` block, context
 # manager exits and all drivers are de-registered.
 
 # todo: loop through features and plot polygons on raster
 # todo: remove download files post processed files
+cmd = '/Applications/Sens2Cor/bin/L2A_Process --resolution 10 ' + '/Users/philipp/Projects/PycharmProjects/RS/unzip/' + str(
+	test.title[0]) + '.SAFE'
+os.system(cmd)
+
 # todo: load existing results and append new ones
 # todo: loop through all existing datasets and run NDVI and save all date to CSV
 
@@ -190,7 +194,7 @@ from shapely.geometry import shape
 
 src = rasterio.open('NDVI_' + str(test.title[0]) + '.tif')
 
-with fiona.open("Wadi-v1.shp", "r") as shapefile:
+with fiona.open("input-polygone/Wadi-v1.shp", "r") as shapefile:
 	features = [feature["geometry"] for feature in shapefile]
 	bounds = [shape(feature['geometry']).bounds for feature in shapefile]
 
