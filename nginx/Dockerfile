@@ -6,8 +6,7 @@ RUN apt-add-repository -y ppa:nginx/stable
 RUN apt update 
 RUN apt install -y nginx
 
-EXPOSE [80, 443]
+ADD nginx.conf /etc/nginx/nginx.conf
 
-RUN service nginx restart
-
+EXPOSE 80 443
 

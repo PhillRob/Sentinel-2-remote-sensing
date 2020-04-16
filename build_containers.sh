@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
-docker build ./nginx -t dc-nginx
-docker build ./DataCollector -t dc-python
+docker build -t dc-nginx ./nginx
+docker build -t dc-python ./DataCollector 
