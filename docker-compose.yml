@@ -3,6 +3,8 @@ version: '3'
 services:
   dc-python:
     image: dc-python
+    build:
+        context: ./DataCollector
     volumes:
       - ./DataCollector:/src/DataCollector
     links:
@@ -12,6 +14,8 @@ services:
 
   dc-nginx:
     image: dc-nginx
+    build:
+        context: ./nginx
     volumes:
       - ./nginx/log:/var/log/nginx/log:Z
     links:
