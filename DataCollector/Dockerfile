@@ -13,7 +13,7 @@ RUN pip3 install --upgrade pip
 
 RUN mkdir /src && mkdir /src/DataCollector && cd /src/DataCollector
 
-ADD requirements.txt /src/DataCollector/requirements.txt
+ADD . /src/DataCollector
 
 RUN cd /src/DataCollector && pip3 install -r requirements.txt
 
