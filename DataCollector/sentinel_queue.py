@@ -1,88 +1,76 @@
+import concurrent.futures
+from multiprocessing import Pool, Lock
+import os
 from sentinelsat import SentinelAPI, read_geojson, geojson_to_wkt
 from db_connection import DBClient
-from zipfile import ZipFile
-import os
-from glob import glob
+from data_processor import DataProcessor
+from sentinel_measurement import SentinelMeasurement
+from util import export_to_tiff
 
-class SentinelClient:
-    def __init__(
-            self, 
-            user=os.environ.get('SENTINEL_USER'),
-            password=os.environ.get('SENTINEL_PASS'),
-            url=os.environ.get('SENTINEL_URL'),
-            footprint_path='sample-polygone.geojson'
-            ):
-        self.__user = user if user is not None else self.__get_default('user')
-        self.__passwd = password if password is not None eeeelse self. 
-        self.__url = url
-        self.__footprint_path = footprint_path
-        self.__api = SentinelAPI(
-                self.__user, 
-                self.__passwd, 
-                self.__url
-        )
-        self.__dbclient = DBClient()
-        self.__footprint = geojson_to_wkt(read_geojson(self.__footprint_path))
-        self.__measurements = None
-        self.__processing_thread = None
-    
-    
-    def __get_default(self, var: str):
-        return os.environ.get("SENTINEL_{}".format(var.upper))
+
+class SentinelQueue:
+
+    def process_all_data(self):
+        self.__threadpool__.apply(self.__process_one_product__)
+
+
+    def __init__(self, geojson_path='sample-polygone.geojson', max_threads=4):
+        # private
+        self.__lock__ = Lock()
+        # self.__dbconn__ = DBClient() 
+        self.__api__ = self.__get_sentinel_api__()
+        self.__geojson_path__ = geojson_path
+        self.__footprint__ = geojson_to_wkt(read_geojson(geojson_path))
+        self.__threadpool__ = Pool(max_threads)
+        # public
+        self.max_threads = max_threads
+        self.products = self.__fetch_measurements__()
+
+
+    def __get_env_var__(self, varname):
+        return os.environ.get('SENTINEL_{}'.format(varname.upper()))
 
     
-    def fetch_measurements(self):
-        tmp = self.__api.to_dataframe(self.__api.query(
-                self.__footprint, 
+    def __save_result__(self, measurement, tiff, result):
+        export_to_tiff(path='/static/tiff', title=measurement.title, tiff=tiff) 
+        with self.__lock__.acquire():
+            self.__dbconn__.push_measurement(measurement.time, result)
+
+
+    def __process_one_product__(self):
+        with self.__lock__.acquire():
+            df = self.products.head(1)
+            self.products.drop([0])
+        measurement = SentinelMeasurement(
+                self.__api__, 
+                self.__geojson_path__,
+                True
+                )
+        dp = DataProcessor(
+                measurement, 
+                lambda tiff,result: self.__save_result__(measurement, tiff, result))
+        dp.process_data(df)
+
+
+    def __get_sentinel_api__(self):
+        sentinel_vars = ['user', 'pass', 'url']
+        tmp = dict([(x, self.__get_env_var__(x)) for x in sentinel_vars])
+        return SentinelAPI(tmp['user'], tmp['pass'], tmp['url'])
+
+
+    def __fetch_measurements__(self):
+        tmp = self.__api__.to_dataframe(self.__api__.query(
+                self.__footprint__,
                 platformname='Sentinel-2',
                 cloudcoverpercentage=(0,10),
-                processinglevel='Level-1C'
+                processinglevel='Level-2A'
         )).sort_values(['ingestiondate'], ascending=[False])
         # get rid of measurements already in influx
-        self.__measurements = tmp[
+        self.measurements = tmp[
             tmp.apply(
-                lambda x: not self.__dbclient.measurement_exists(x.index), 
-                axis=1
+                lambda x: not self.__dbconn__.measurement_exists(x.index),
+		axis=1
             )
         ]
 
-
-    def __cleanup(self, title):
-        zip_path = '{}.zip'.format(title)
-        os.remove(zip_path)
-        dirs = [ name for name in os.listdir('.') if os.path.isdir(os.path.join('.', name)) ]
-        
-        for i in dirs:
-            os.rmdir(i)
-
-
-    def __download_measurement(self, title, index):
-        zip_name = '{}.zip'.format(title)
-        self.__api.download_all(index) 
-        with ZipFile(zip_name) as f:
-            f.extractall('tmp')
-
-    
-    def __sen2cor_process(self, title):
-        cmd = "L2A_Process --resolution 10 ./tmp/{title}.SAFE".format(title=title)
-        os.system(cmd)
-        # Ugly hack for the title, will fix
-        output_name_constant = title[38:44]+ title[10:26]
-        red_file = "".join(glob("**/*{out_name}_B04_10m.jp2".format(out_name=output_name_constant), recursive=True))
-        nir_file = "".join(glob("**/*{out_name}_B08_10m.jp2".format(out_name=output_name_constant), recursive=True))
-        
-        return rif_file, nir_file 
-
-
-    def __process_last_measurement(self):
-        record = self.__measurements.head(1) 
-        title = record.title[0]
-        self.__download_measurement(title, record.index)
-        red, nir = self.__sen2cor_process(title)
-         
-        self.__cleanup(title)
-
-
-    def start_processing(self):
-        pass
 

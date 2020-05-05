@@ -7,6 +7,10 @@ services:
         context: ./DataCollector
     volumes:
       - ./DataCollector:/src/DataCollector
+      - ./nginx/content:/static:Z
+    entrypoint:
+      - 'python3'
+      - '/src/DataCollector/run-dc.py'
     links:
       - influxdb
     ports:
@@ -18,6 +22,7 @@ services:
         context: ./nginx
     volumes:
       - ./nginx/log:/var/log/nginx/log:Z
+      - ./nginx/content:/nginxcontent:Z
     links:
         - chronograf
     entrypoint:
@@ -69,3 +74,4 @@ services:
       - influxdb
     ports:
       - "9092:9092"
+

@@ -8,5 +8,7 @@ RUN apt install -y nginx
 
 ADD nginx.conf /etc/nginx/nginx.conf
 
+RUN mkdir /nginxcontent
+
 EXPOSE 80 443
 
