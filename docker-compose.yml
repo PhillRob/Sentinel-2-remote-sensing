@@ -8,9 +8,9 @@ services:
     volumes:
       - ./DataCollector:/src/DataCollector
       - ./nginx/content:/static:Z
-    entrypoint:
-      - 'python3'
-      - '/src/DataCollector/run-dc.py'
+        # entrypoint:
+        #   - 'python3'
+        #   - '/src/DataCollector/run-dc.py'
     links:
       - influxdb
     ports:

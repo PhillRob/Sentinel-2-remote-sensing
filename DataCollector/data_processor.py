@@ -1,4 +1,5 @@
 import rasterstats as rstats
+import geopandas as gpd
 import rasterio as rio 
 import numpy as np
 
@@ -8,6 +9,7 @@ class DataProcessor:
         self.red_file = measurement.red_path
         self.nir_file = measurement.nir_path
         self.title = measurement.title
+        self.id = measurement.id
         self.cloudcover = measurement.cloudcover
         self.gjson = measurement.geojson_path
         self.result_callback = result_callback
@@ -17,9 +19,11 @@ class DataProcessor:
         result = res[0]['properties']
         veg_count = result['count']
         poly_count = veg_count + result['nodata']
-        cov_percentage = poly_count * 100 / veg_count 
+        cov_percentage = veg_count * 100 / poly_count
         ret = {
             'abs_veg_cover': veg_count,
+            'title': self.title,
+            'id':self.id,
             'veg_cover_percentage': cov_percentage,
             'cloudcover': self.cloudcover,
             'img_link': '/static/img/{}.jp2'.format(self.title),
@@ -29,8 +33,10 @@ class DataProcessor:
 
 
     def process_data(self, df):
+        nodata = -127
         with rio.open(self.red_file) as red, rio.open(self.nir_file) as nir:
-            b4 = red.readd(1)
+
+            b4 = red.read(1)
             b8 = nir.read(1)
             np.seterr(divide='ignore', invalid='ignore')
             ndvi = (b8.astype(float) - b4.astype(float)) / (
@@ -41,9 +47,9 @@ class DataProcessor:
             ndvi_bi[np.where(ndvi_bi < 0.20)] = nodata
 
             crs = red.crs.to_dict()
-            shapefile = gpd.read_file(geojson_path).to_crs(crs).values.tolist()[0]
+            shapefile = gpd.read_file(self.gjson).to_crs(crs).values.tolist()[0]
             # veg_coverage_abs, veg_cover_rel, cloudcover, img_link, tiff_link
-            result = zonal_stats(
+            result = rstats.zonal_stats(
                             vectors=shapefile,
                             raster=ndvi_bi,
                             stats=['count', 'nodata'],
@@ -56,7 +62,7 @@ class DataProcessor:
 
             results = self.format_measurement_results(result)
             if self.result_callback is not None:
-                self.result_callback(ndvi_bi, results)
+                self.result_callback(ndvi_bi, results, red.profile)
 
 
 

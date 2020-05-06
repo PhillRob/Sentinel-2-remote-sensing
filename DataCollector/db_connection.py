@@ -23,15 +23,17 @@ class DBClient:
 
     def push_measurement(self, time, measurement: dict):
         body = \
-            {
+            [{
                  "measurement":"satellite_measurements",
-                 "tags":{},
+                 "tags":{"test":"tag"},
                  "time":time,
                  "fields":measurement
-            }
+            }]
+        # print("points: {}".format(body))
         self.client.write_points(body)
 
 
-    def measurement_exists(self, id: str):
-        query = self.client.query('SELECT index FROM satellite_measurements WHERE id=$id', bind_params={'id': id})
-        return len(query.items) > 0
+    def measurement_exists(self, mid):
+        query = self.client.query('SELECT * FROM "sentinel_data"."autogen"."satellite_measurements" WHERE id=$id', bind_params={'id': mid.uuid})
+        duplicate = len(query.items()) > 0
+        return duplicate
