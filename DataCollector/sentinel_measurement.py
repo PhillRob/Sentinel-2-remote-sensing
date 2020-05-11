@@ -33,12 +33,22 @@ class SentinelMeasurement:
         regex_format = self.output_dir + '/**/*_B0{nr}_10m.jp2'
         # print(regex_format)
         
+        blue_file = "".join(
+                glob.glob(regex_format.format(nr=2), recursive=True)
+        )
+        green_file = "".join(
+                glob.glob(regex_format.format(nr=3), recursive=True)
+        )
         red_file = "".join(
-                glob.glob(regex_format.format(nr=4), recursive=True))
+                glob.glob(regex_format.format(nr=4), recursive=True)
+        )
         nir_file = "".join(
                 glob.glob(regex_format.format(nr=8), recursive=True))
         self.red_path = red_file
         self.nir_path = nir_file
+        self.blue_path = blue_file
+        self.green_path = green_file
+
 
     def __download_and_unzip__(self):
         if(self.is_download_done()):

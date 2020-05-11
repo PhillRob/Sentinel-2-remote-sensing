@@ -1,9 +1,30 @@
 from datetime import datetime, timedelta
 import os
-import rasterio
+import rasterio 
+from rasterio.mask import mask
 
 
-def export_to_tiff(path, tite, tiff):
+def write_rgb(measurement, out_tiff):
+    with rasterio.open(measurement.b2) as blue, \
+        rasterio.open(measurement.b3) as green, \
+        rasterio.open(measurement.red_path) as red:
+        with rasterio.open(
+                out_tiff, 
+                'w',
+                driver='Gtiff', 
+                width=red.width, 
+                height=red.height, 
+                count=3,
+                crs=red.crs,
+                transform=red.transform, 
+                dtype=red.dtypes[0]
+            ) as rgb:
+                rgb.write(blue.read(1),1) 
+                rgb.write(green.read(1),2) 
+                rgb.write(red.read(1),3) 
+
+
+def export_to_tiff(path, title, tiff, profile):
     out_path = '{path}/{title}.tiff'.format(title=title, path=path)
     with rasterio.Env():
         profile.update(

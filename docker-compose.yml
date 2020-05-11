@@ -7,12 +7,12 @@ services:
         context: ./DataCollector
     volumes:
       - ./DataCollector:/src/DataCollector
-      - ./nginx/content:/static:Z
-    entrypoint:
-      - 'python3'
-      - '/src/DataCollector/run-dc.py'
+      - ./nginx/content:/nginx/static:Z
     links:
       - influxdb
+    entrypoint: 
+      - 'python'
+      - 'run_dc.py'
     ports:
       - "8080:8080"  
 
@@ -22,16 +22,16 @@ services:
         context: ./nginx
     volumes:
       - ./nginx/log:/var/log/nginx/log:Z
-      - ./nginx/content:/nginxcontent:Z
+      - ./nginx/content:/static/tiff:Z
     links:
-        - chronograf
+      - chronograf
     entrypoint:
-        - 'nginx'
-        - '-g'
-        - 'daemon off;'
+      - 'nginx'
+      - '-g'
+      - 'daemon off;'
     ports:
-      - "80:80/tcp"
-      - "443:443/tcp"
+      - "80:80"
+      - "443:443"
 
   telegraf:
     image: telegraf:1.4.0
@@ -56,6 +56,7 @@ services:
   chronograf:
     image: chronograf:1.3.8
     environment:
+      # BASE_PATH: /chronograf
       INFLUXDB_URL: http://influxdb:8086
       KAPACITOR_URL: http://kapacitor:9092
     ports:

@@ -6,6 +6,7 @@ from sentinelsat import SentinelAPI, read_geojson, geojson_to_wkt
 from db_connection import DBClient
 from data_processor import DataProcessor
 from sentinel_measurement import SentinelMeasurement
+from rio_colored import RGBImage
 from util import export_to_tiff
 
 
@@ -35,8 +36,10 @@ class SentinelQueue:
 
     
     def __save_result__(self, measurement, tiff, result, profile):
-        export_to_tiff(path='/static/tiff', title=measurement.title, tiff=tiff, profile=profile) 
+        export_to_tiff(path='./tiff', title=measurement.title, tiff=tiff, profile=profile) 
+        cropped = RGBImage(measurement, autogen=True)
         self.__dbconn__.push_measurement(measurement.time, result)
+        cropped.cleanup()
         measurement.cleanup()
 
 
