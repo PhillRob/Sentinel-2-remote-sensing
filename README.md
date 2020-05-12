@@ -16,7 +16,7 @@
     - acts as a proxy for chronograf
     - mounts shared img vol
   - influxdb => TSDB, mounts influxdb
-  - chronogrfa => data visualization
+  - chronograf => data visualization
   - kapacitor => data aggregation
   
     
