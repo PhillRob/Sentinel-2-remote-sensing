@@ -19,3 +19,4 @@ RUN mkdir /static && \
 RUN mkdir /static_content && \
     mkdir /static_content/tiff && \
     mkdir /static_content/images 
+ADD ../simple-polygone.geojson /src/DataCollector/simple-polygone.geojson
