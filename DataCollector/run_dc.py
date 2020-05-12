@@ -7,8 +7,8 @@ import os
 if __name__ == '__main__':
     import dotenv
     dotenv.load_dotenv()
-    nginx_tiff_dir = '/nginx/static/tiff'
-    nginx_img_dir = '/nginx/static/images'
+    nginx_tiff_dir = '/static_content/tiff'
+    nginx_img_dir = '/static_content/images'
     if not os.path.isdir(nginx_tiff_dir):
         os.mkdir(nginx_tiff_dir)
     if not os.path.isdir(nginx_img_dir):

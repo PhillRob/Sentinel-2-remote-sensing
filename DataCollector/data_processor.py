@@ -32,7 +32,7 @@ class DataProcessor:
             'id':self.id,
             'veg_cover_percentage': cov_percentage,
             'cloudcover': self.cloudcover,
-            'img_link': '/static/img/{}.jp2'.format(self.title),
+            'img_link': '/static/images/{}_cropped.tiff'.format(self.title),
             'tiff_link': '/static/tiff/{}.tiff'.format(self.title)
         }
         return ret

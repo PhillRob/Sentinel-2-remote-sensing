@@ -6,8 +6,8 @@ services:
     build:
         context: ./DataCollector
     volumes:
-      - ./DataCollector:/src/DataCollector
-      - ./nginx/content:/nginx/static:Z
+      - ./nginx/content/tiff:/static_content/tiff:Z
+      - ./nginx/content/images:/static_content/images:Z
     links:
       - influxdb
     entrypoint: 
@@ -22,7 +22,8 @@ services:
         context: ./nginx
     volumes:
       - ./nginx/log:/var/log/nginx/log:Z
-      - ./nginx/content:/static/tiff:Z
+      - ./nginx/content/tiff:/static/tiff:Z
+      - ./nginx/content/images:/static/images:Z
     links:
       - chronograf
     entrypoint:
