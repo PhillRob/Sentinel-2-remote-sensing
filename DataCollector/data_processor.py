@@ -74,8 +74,17 @@ class DataProcessor:
 
             
             results = self.format_measurement_results(result)
+            profile = red.profile.copy()
+            profile.update(
+                    {
+                        "driver": "GTiff",
+                        "height": red_cropped.shape[1],
+                        "width": red_cropped.shape[2],
+                        "transform": red_transform
+                    }
+            )
             
             if self.result_callback is not None:
-                self.result_callback(ndvi_bi, results, red.profile)
+                self.result_callback(ndvi_bi, results, profile)
 
 

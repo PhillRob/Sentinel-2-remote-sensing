@@ -35,6 +35,8 @@ def export_to_tiff(path, title, tiff, profile):
         with rasterio.open(out_path, 'w', **profile) as dst:
             dst.write(tiff.astype(rasterio.int8), 1)
 
+    return out_path
+
 
 def last_2_weeks():
     return create_timeframe()
