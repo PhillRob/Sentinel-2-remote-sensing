@@ -41,6 +41,8 @@ class SentinelQueue:
         overlay_path = export_to_tiff(path=self.__tiff_path__, title=measurement.title, tiff=tiff, profile=profile) 
         
         cropped = RGBImage(measurement, base_path=self.__img_path__ ,autogen=True, overlay_path=overlay_path)
+        result['tiff_link'] = overlay_path
+        result['img_link'] = cropped.result_path
         self.__dbconn__.push_measurement(measurement.time, result)
         cropped.cleanup()
         measurement.cleanup()

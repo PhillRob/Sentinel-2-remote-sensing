@@ -113,4 +113,6 @@ class RGBImage:
 
     def cleanup(self):
         os.remove(self.tmp_tiff_path)
+        if not self.result_path == self.cropped_path:
+            os.remove(self.cropped_path)
 

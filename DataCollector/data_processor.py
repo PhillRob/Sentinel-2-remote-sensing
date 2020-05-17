@@ -23,6 +23,12 @@ class DataProcessor:
 
     def format_measurement_results(self, res):
         result = res[0]['properties']
+        default_img_link = '/static/images/{}_cropped.tiff'.format(self.title)
+        default_tiff_link='/static/tiff/{}.tiff'.format(self.title)
+
+        img_link = result.get('img_link', default_img_link)
+        tiff_link = result.get('tiff_link', default_tiff_link)
+        
         veg_count = result['count']
         poly_count = veg_count + result['nodata']
         cov_percentage = veg_count * 100 / poly_count
@@ -32,8 +38,8 @@ class DataProcessor:
             'id':self.id,
             'veg_cover_percentage': cov_percentage,
             'cloudcover': self.cloudcover,
-            'img_link': '/static/images/{}_cropped.tiff'.format(self.title),
-            'tiff_link': '/static/tiff/{}.tiff'.format(self.title)
+            'img_link': img_link,
+            'tiff_link': tiff_link
         }
         return ret
 
