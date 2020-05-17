@@ -13,8 +13,7 @@ services:
     entrypoint: 
       - 'python'
       - 'run_dc.py'
-    ports:
-      - "8080:8080"  
+    restart: on-failure
 
   dc-nginx:
     image: dc-nginx
