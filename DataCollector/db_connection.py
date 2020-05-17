@@ -25,7 +25,7 @@ class DBClient:
         body = \
             [{
                  "measurement":"satellite_measurements",
-                 "tags":{"test":"tag"},
+                 "tags":{},
                  "time":time,
                  "fields":measurement
             }]
