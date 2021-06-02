@@ -40,5 +40,5 @@ simplejson==3.17.0
 six==1.14.0
 snuggs==1.4.7
 tqdm==4.45.0
-urllib3==1.25.9
+urllib3==1.26.5
 utm-zone==1.0.1
